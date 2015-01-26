@@ -74,7 +74,7 @@ task :production do
   role :rvm, "app-server-1.fr2.ec2.internal", "app-server-2.fr2.ec2.internal", "app-server-3.fr2.ec2.internal", "app-server-4.fr2.ec2.internal", "app-server-5.fr2.ec2.internal"
 
   set :github_user_repo, 'usnationalarchives'
-  set :github_project_repo, 'federalregister-api-core'
+  set :github_project_repo, 'fr2'
   set :github_username, 'usnationalarchives'
   set :repository, "git@github.com:#{github_user_repo}/#{github_project_repo}.git"
 end
