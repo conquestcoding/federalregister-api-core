@@ -8,7 +8,7 @@ gem 'mysql', '2.7'
 
 gem "jrails", "0.6.0"
 
-gem 'nokogiri', '1.3.2'
+gem 'nokogiri', '1.5.11'
 gem 'curb', '0.4.4.0'
 gem 'http_headers', '0.0.2.3'
 gem 'geokit', '1.4.1', :require => 'geokit'
@@ -17,6 +17,7 @@ gem 'fastercsv', '1.4.0'
 gem 'amatch', '0.2.11'
 gem 'indefinite_article'
 gem 'rubyzip', '0.9.1', :require => 'zip/zip'
+gem 'fog'
 gem 'formtastic', '0.9.8'
 
 gem 'json', '1.7.7'
@@ -47,8 +48,9 @@ gem 'pdfkit', '0.5.2'
 gem 'klarlack', '0.0.6'
 gem 'system_timer', '1.0.0'
 gem "amazon-ec2", :require => false
+gem 'popen4'
 
-gem "net-scp", '1.0.4'
+gem "net-scp", '1.1.0'
 
 gem "capistrano", '2.15.4', :require => false
 gem "thunder_punch", '0.0.14', :require => false
@@ -67,6 +69,9 @@ gem "validation_reflection", "0.3.8"
 gem 'juicer', '1.0.6'
 
 gem 'rdoc'
+gem 'net-sftp'
+gem 'diffy'
+gem 'cocaine'
 
 # bundler requires these gems in all environments
 # gem 'nokogiri', '1.4.2'
@@ -76,6 +81,7 @@ group :deployment do
 end
 
 group :development do
+  gem 'ruby-debug'
   # bundler requires these gems in development
   # gem 'rails-footnotes'
   # gem 'poolparty', '1.6.9'

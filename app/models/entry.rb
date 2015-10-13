@@ -60,9 +60,14 @@ class Entry < ApplicationModel
            :class_name => 'Entry',
            :through => :references,
            :source => :source_entry
+
   has_many :graphic_usages
   has_many :graphics,
            :through => :graphic_usages
+
+  has_many :gpo_graphic_usages,
+    :foreign_key => :document_number,
+    :primary_key => :document_number
 
   acts_as_mappable :through => :places
 
@@ -204,6 +209,24 @@ class Entry < ApplicationModel
     scoped(:conditions => {:presidential_document_type_id => PresidentialDocumentType::EXECUTIVE_ORDER})
   end
 
+  def gpo_graphics
+    gpo_graphic_usages.map(&:gpo_graphic).compact
+  end
+
+  def processed_gpo_graphics
+    gpo_graphics.select{|g| g.graphic_file_name.present?}
+  end
+
+  def graphic_identifiers
+    if graphics.extracted.present?
+      graphics.extracted.map(&:identifier)
+    elsif processed_gpo_graphics.present?
+      processed_gpo_graphics.map(&:identifier)
+    else
+      []
+    end
+  end
+
   def granule_class
     self[:granule_class] || 'UNKNOWN'
   end
@@ -213,7 +236,7 @@ class Entry < ApplicationModel
   end
 
   alias_method :category, :entry_type
-  
+
   define_index do
     # fields
     indexes title
