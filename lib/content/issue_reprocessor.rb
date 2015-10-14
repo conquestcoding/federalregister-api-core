@@ -5,15 +5,10 @@ module Content
 
     @queue = :default
 
-    attr_reader :reprocessed_issue, :date, :current_mods_path, :mods_archive_path,
-                :temporary_mods_path
+    attr_reader :reprocessed_issue
 
-    def initialize(reprocessed_issue_id, options={})
-      @reprocessed_issue = ReprocessedIssue.find_by_id(reprocessed_issue_id)
-      @date = @reprocessed_issue.publication_date
-      @current_mods_path = options[:current_mods_path] || File.join('data','mods')
-      @temporary_mods_path = options[:temporary_mods_path] || File.join('data','mods','tmp')
-      @mods_archive_path = options[:mods_archive_path] || File.join('data','mods','archive')
+    def initialize(reprocessed_issue_id)
+      @reprocessed_issue = ReprocessedIssue.find(reprocessed_issue_id)
     end
 
     def self.perform(reprocessed_issue_id, options={})
@@ -30,13 +25,18 @@ module Content
 
     private
 
+    def date
+      @date ||= @reprocessed_issue.publication_date
+    end
+
     def reprocess_issue
       reprocess_events
       reprocess_agencies
     end
 
     def reprocess_events
-      update_message("#{Time.now.to_s(:short_date_then_time)}: reprocessing dates...")
+      update_message("#{Time.now.in_time_zone.to_s(:short_date_then_time)}: reprocessing dates...")
+
       begin
         line = Cocaine::CommandLine.new(
           "bundle exec rake",
@@ -58,7 +58,8 @@ module Content
     end
 
     def reprocess_agencies
-      update_message("#{Time.now.to_s(:short_date_then_time)}: reprocessing agencies...")
+      update_message("#{Time.now.in_time_zone.to_s(:short_date_then_time)}: reprocessing agencies...")
+
       begin
         line = Cocaine::CommandLine.new(
           "bundle exec rake",
@@ -80,7 +81,8 @@ module Content
     end
 
     def reindex
-      update_message("#{Time.now.to_s(:short_date_then_time)}: updating search index...")
+      update_message("#{Time.now.in_time_zone.to_s(:short_date_then_time)}: updating search index...")
+
       begin
         line = Cocaine::CommandLine.new(
           "/usr/local/bin/indexer",
@@ -106,15 +108,15 @@ module Content
     end
 
     def rotate_mods_files
-      FileUtils.makedirs(mods_archive_path)
+      FileUtils.makedirs(archive_mods_path)
       FileUtils.mv(
-        File.join(current_mods_path, "#{date.to_s(:iso)}.xml"),
-        File.join(mods_archive_path, "#{date.to_s(:iso)}-#{Time.now.to_i}.xml")
+        File.join(mods_path, "#{date.to_s(:iso)}.xml"),
+        File.join(archive_mods_path, "#{date.to_s(:iso)}-#{Time.now.to_i}.xml")
       )
       FileUtils.makedirs(temporary_mods_path)
       FileUtils.mv(
         File.join(temporary_mods_path, "#{date.to_s(:iso)}.xml"),
-        File.join(current_mods_path, "#{date.to_s(:iso)}.xml")
+        File.join(mods_path, "#{date.to_s(:iso)}.xml")
       )
     end
 
