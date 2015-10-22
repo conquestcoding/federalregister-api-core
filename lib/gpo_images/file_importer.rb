@@ -19,6 +19,7 @@ class GpoImages::FileImporter
   end
 
   def force_convert
+    puts "force converting GPO eps files to images for #{date}"
     cleanup_old_packages
     convert_files
   end
@@ -30,23 +31,24 @@ class GpoImages::FileImporter
   end
 
   def cleanup_old_packages
-    image_packages = image_packages_for_date(date)
     image_packages.each do |image_package|
-      image_package.cleanup_in_progress_files
+      image_package.cleanup_package
     end
-    image_packages.first.delete_entire_redis_set if image_packages.present?
+    image_packages.first.delete_redis_set if image_packages.present?
   end
 
   def convert_files
-    image_packages_for_date(date).
+    image_packages.
       reject(&:already_converted?).
       each {|package| GpoImages::FileConverter.new(package.digest, package.date).process}
   end
 
-  def image_packages_for_date(date)
-    fog_aws_connection.directories.get(bucket_name, :prefix => date.to_s(:ymd)).files.
+  def image_packages
+    @image_packages ||= fog_aws_connection.directories.
+      get(bucket_name, :prefix => date.to_s(:ymd)).
+      files.
       map{|file| file.key}.
       select{|key| File.extname(key) == '.zip'}.
-      map{|key|GpoImages::ImagePackage.new(date, key)}
+      map{|key| GpoImages::ImagePackage.new(date, key)}
   end
 end

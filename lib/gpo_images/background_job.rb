@@ -25,6 +25,7 @@ module GpoImages
         gpo_graphic.move_to_public_bucket if mark_public
         remove_from_redis_key
         remove_local_image
+
         if redis_file_queue_empty?
           mark_zipfile_as_converted
           remove_zip_file
@@ -65,7 +66,7 @@ module GpoImages
     end
 
     def redis
-      Redis.new
+      @redis ||= Redis.new
     end
 
     def remove_from_redis_key
@@ -73,7 +74,7 @@ module GpoImages
     end
 
     def mark_zipfile_as_converted
-      GpoImages::ImagePackage.new(ftp_transfer_date, bucketed_zip_filename).mark_as_completed!
+      GpoImages::ImagePackage.new(ftp_transfer_date, bucketed_zip_filename).mark_as_complete!
     end
 
     def redis_file_queue_empty?
