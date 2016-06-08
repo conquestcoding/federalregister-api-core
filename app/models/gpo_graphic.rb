@@ -5,21 +5,27 @@ class GpoGraphic < ActiveRecord::Base
     :foreign_key => :identifier,
     :primary_key => :identifier
 
+  has_many :gpo_graphic_packages,
+    :foreign_key => :graphic_identifier,
+    :primary_key => :identifier,
+    :dependent => :destroy
+
   has_attached_file :graphic,
                     :styles => {
                       :large => {
                         :format => :png,
                         :geometry => "460",
+                        :convert_options => "-strip -unsharp 0",
                         :source_file_options => "-density 300"
                       },
-                      :original => {
+                      :original_png => {
                         :format => :png,
-                        :geometry => "",
+                        :geometry => "100%",
+                        :convert_options => "-strip -unsharp 0",
                         :source_file_options => "-density 300"
                       }
                     },
                     :processors => [:thumbnail],
-                    :source_file_options => ["-density 300"],
                     :storage => :s3,
                     :s3_credentials => {
                       :access_key_id     => SECRETS["aws"]["access_key_id"],
@@ -34,7 +40,7 @@ class GpoGraphic < ActiveRecord::Base
   named_scope :unprocessed, :conditions => "graphic_file_name IS NULL"
 
   def entries
-    gpo_graphic_usages.map(&:entry)
+    @entries ||= gpo_graphic_usages.all(:include => :entry).map(&:entry)
   end
 
   def set_content_type
